@@ -1,3 +1,63 @@
+# Installation
+
+This is a fork of triton for AMD MI50/60.
+I assume you already have rocm 6.2.2 installed with GPU drivers.
+If not, use these commands (assuming you have Ubuntu 22.04):
+
+```
+sudo apt update
+sudo apt install "linux-headers-$(uname -r)" "linux-modules-extra-$(uname -r)"
+sudo usermod -a -G render,video $LOGNAME # Add the current user to the render and video groups
+wget https://repo.radeon.com/amdgpu-install/6.2.2/ubuntu/jammy/amdgpu-install_6.2.60202-1_all.deb
+sudo apt install ./amdgpu-install_6.2.60202-1_all.deb
+sudo apt update
+sudo apt install amdgpu-dkms rocm
+# linker
+sudo tee --append /etc/ld.so.conf.d/rocm.conf <<EOF
+/opt/rocm/lib
+/opt/rocm/lib64
+EOF
+sudo ldconfig
+
+# path
+export PATH=$PATH:/opt/rocm-6.2.2/bin
+
+# verify drivers
+dkms status
+
+# You need to close all windows and reboot to make changes effective.
+reboot
+```
+
+Now you have rocm 6.2.2.
+
+Install triton 3.2.0+git755d4164.
+
+```
+# create venv
+python3 -m venv vllmenv
+source vllmenv/bin/activate
+git clone https://github.com/Said-Akbar/triton-rocm.git
+cd triton/python
+# install triton req’s
+pip3 install ninja cmake wheel pybind11
+# install torch first
+pip3 install --no-cache-dir --pre torch>=2.6 torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/rocm6.2
+# build triton
+pip3 install -e .
+# install triton test req’s
+pip3 install scipy numpy pytest lit pandas matplotlib
+# Run tests:
+python3 -m pytest ./test/unit
+
+```
+
+End of installation.
+
+You can use triton language and its flash attention with vllm or exllamav2.
+
+End of custom description.
+
 <div align="center">
   <img src="https://lh5.googleusercontent.com/wzQKEsTFkrgNQO9JjhGH5wFvslJr1saLtLaJ_a6Fp_gNENpvt3VG7BmztwngU9hFJaU4CPwGiw1opQtDvTkLrxWRbO_a12Q-pdESWHgtmheIHcPbOL5ZMC4TSiJVe5ty1w=w3517" alt="Triton logo">
 </div>
